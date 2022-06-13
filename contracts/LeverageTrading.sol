@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { ERC20 } from "@openzeppelin/contracts@4.0.0/token/ERC20/ERC20.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 
@@ -12,29 +12,29 @@ interface IERC20 {
 
 
 
-contract BTCUP is ERC20{
+contract BTCUP is ERC20 {
     constructor() ERC20("Bitcoin Up", "BTCUP") {
     }
 
-    function mint(uint256 quantity) public{
+    function mint(uint256 quantity) public {
         _mint(msg.sender, quantity);
     }
 
-    function burn(uint256 quantity) public{
+    function burn(uint256 quantity) public {
         _burn(msg.sender, quantity);
     }
 }
 
 
-contract BTCDOWN is ERC20{
+contract BTCDOWN is ERC20 {
     constructor() ERC20("Bitcoin Down", "BTCDOWN") {
     }
 
-    function mint(uint256 quantity) public{
+    function mint(uint256 quantity) public {
         _mint(msg.sender, quantity);
     }
 
-    function burn(uint256 quantity) public{
+    function burn(uint256 quantity) public {
         _burn(msg.sender, quantity);
     }
 }
@@ -57,80 +57,80 @@ contract LeverageTrading{
     uint256 lastBtcPrice = 0;
 
     address addressUsdc = 0xb7a4F3E9097C08dA09517b5aB877F7a917224ede;  // <- Kovan  //0xeb8f08a975Ab53E34D8a0330E0D34de942C95926;
-    address public addressBtcUSDFeed =  0x6135b13325bfC4B00278B4abC5e20bbce2D6580e; // <- Kovan          // 0xECe365B379E1dD183B20fc5f022230C044d51404;
+    address addressBtcUSDFeed =  0x6135b13325bfC4B00278B4abC5e20bbce2D6580e; // <- Kovan          // 0xECe365B379E1dD183B20fc5f022230C044d51404;
 
 
     BTCUP btcUp = new BTCUP();
     BTCDOWN btcDown = new BTCDOWN();
 
 
-    function initiatePool(uint256 amountLeverageTokens) public {
+    function initiatePool(uint256 amountLeveragedTokens) public {
         require(!poolIsInitiated, "The pool was already initiated.");
-        issueBtcUp(amountLeverageTokens);
-        issueBtcDown(amountLeverageTokens);
+        issueBtcUp(amountLeveragedTokens);
+        issueBtcDown(amountLeveragedTokens);
 
         poolIsInitiated = true;
     }
 
 
 
-    function issueBtcUp(uint256 amountLeverageTokens) public {
-        rebalanceLeverageTokens();
-        btcUp.mint(amountLeverageTokens);
+    function issueBtcUp(uint256 amountLeveragedTokens) public {
+        rebalanceLeveragedTokens();
+        btcUp.mint(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeverageTokens * getBtcUpPrice() / 10 ** 18;
+        uint256 amountUsdc = amountLeveragedTokens * getBtcUpPrice() / 10 ** 18;
         require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC");
 
-        amountBtcUp += amountLeverageTokens;
+        amountBtcUp += amountLeveragedTokens;
         collateralBtcUp += amountUsdc;
     }
 
 
 
-    function issueBtcDown(uint256 amountLeverageTokens) public {
-        rebalanceLeverageTokens();
-        btcDown.mint(amountLeverageTokens);
+    function issueBtcDown(uint256 amountLeveragedTokens) public {
+        rebalanceLeveragedTokens();
+        btcDown.mint(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeverageTokens * getBtcDownPrice() / 10 ** 18;
+        uint256 amountUsdc = amountLeveragedTokens * getBtcDownPrice() / 10 ** 18;
         require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC");
 
-        amountBtcDown += amountLeverageTokens;
+        amountBtcDown += amountLeveragedTokens;
         collateralBtcDown += amountUsdc;
     }
 
 
 
-    function redeemBtcUp(uint256 amountLeverageTokens) public {
-        rebalanceLeverageTokens();
-        btcUp.burn(amountLeverageTokens);
+    function redeemBtcUp(uint256 amountLeveragedTokens) public {
+        rebalanceLeveragedTokens();
+        btcUp.burn(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeverageTokens * getBtcUpPrice() / 10 ** 18;
+        uint256 amountUsdc = amountLeveragedTokens * getBtcUpPrice() / 10 ** 18;
         require(usdc.transfer(msg.sender, amountUsdc), "Not enough usdc available");
 
-        amountBtcUp -= amountLeverageTokens;
+        amountBtcUp -= amountLeveragedTokens;
         collateralBtcUp -= amountUsdc;
     }
 
 
 
-    function redeemBtcDown(uint256 amountLeverageTokens) public {
-        rebalanceLeverageTokens();
-        btcDown.burn(amountLeverageTokens);
+    function redeemBtcDown(uint256 amountLeveragedTokens) public {
+        rebalanceLeveragedTokens();
+        btcDown.burn(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeverageTokens * getBtcDownPrice() / 10 ** 18;
+        uint256 amountUsdc = amountLeveragedTokens * getBtcDownPrice() / 10 ** 18;
         require(usdc.transfer(msg.sender,  amountUsdc), "Not enough usdc available");
 
-        amountBtcDown -= amountLeverageTokens;
+        amountBtcDown -= amountLeveragedTokens;
         collateralBtcDown -= amountUsdc;
     }
 
 
 
-    function rebalanceLeverageTokens() public {
+    function rebalanceLeveragedTokens() public {
         uint256 btcPrice = getBtcPrice();
         if (poolIsInitiated) {
             uint256 rebalanceAmount = getRebalanceAmount(btcPrice);
@@ -168,13 +168,13 @@ contract LeverageTrading{
 
 
 // getBtcUpPrice() 18 decimals
-    function getBtcUpPrice() internal view returns (uint256) {
+    function getBtcUpPrice() public view returns (uint256) {
         return collateralBtcUp / amountBtcUp * 10 ** 18;
     }
 
 
 // getBtcDownPrice() 18 decimals
-    function getBtcDownPrice() internal view returns (uint256) {//18 decimals
+    function getBtcDownPrice() public view returns (uint256) {//18 decimals
         return collateralBtcDown / amountBtcDown * 10 ** 18;
     }
 

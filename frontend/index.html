@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Leveraged Tokens</title>
+    <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+</head>
+
+<body>
+
+    <button id="connect-btn"> Connect </button>
+    <button id="disconnect-btn"> Disconnect </button>
+    <br>
+    <br>
+    <button id="initiate-pool-btn"> Provide initial liquidity</button>
+    
+    <input type="number" id="amount-initial-liquidity" name="amount" min="0" value="0">
+    <label for="amount"> $ </label>
+    <br>
+    <br>
+
+    <button id="issue-btcup-btn"> Issue BTCUP </button>
+    <input type="number" id="amount-btcup-issue" name="amount" min="0" value="0">
+    <label for="amount"> $ </label>
+
+    <button id="issue-btcdown-btn"> Issue BTCDOWN </button>
+    <input type="number" id="amount-btcdown-issue" name="amount" min="0" value="0">
+    <label for="amount"> $ </label>
+
+    <br>
+    
+    <button id="redeem-btcup-btn"> Redeem BTCUP </button>
+    <input type="number" id="amount-btcup-redeem" name="amount" min="0" value="0">
+    <label for="amount"> BTCUP </label>
+
+
+    <button id="redeem-btcdown-btn"> Redeem BTCDOWN </button>
+    <input type="number" id="amount-btcdown-redeem" name="amount" min="0" value="0">
+    <label for="amount"> BTCDOWN </label>
+
+
+    <style>
+        body {
+          background-image: url('images/bitcoin.png');
+          background-repeat: no-repeat;
+        }
+        </style>
+
+    <script src="./dist/bundle.js" type="text/javascript">  </script>
+    
+
+</body>
+
+</html>
