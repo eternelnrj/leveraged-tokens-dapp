@@ -10,18 +10,21 @@ interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
-
-
 contract BTCUP is ERC20 {
     constructor() ERC20("Bitcoin Up", "BTCUP") {
+      
     }
 
     function mint(uint256 quantity) public {
-        _mint(msg.sender, quantity);
+        _mint(tx.origin, quantity);
     }
 
     function burn(uint256 quantity) public {
-        _burn(msg.sender, quantity);
+        _burn(tx.origin, quantity);
+    }
+
+    function decimals() public view override returns (uint8) {
+        return 6;
     }
 }
 
@@ -31,30 +34,33 @@ contract BTCDOWN is ERC20 {
     }
 
     function mint(uint256 quantity) public {
-        _mint(msg.sender, quantity);
+        _mint(tx.origin, quantity);
     }
 
     function burn(uint256 quantity) public {
-        _burn(msg.sender, quantity);
+        _burn(tx.origin, quantity);
+    }
+
+    function decimals() public view override returns (uint8) {
+        return 6;
     }
 }
 
 
-
 contract LeverageTrading{
 
-    bool poolIsInitiated = false;
+    bool public poolIsInitiated = false;
 
-    uint256 priceBtcUp = 10 ** 18;
-    uint256 priceBtcDown = 10 ** 18;
+    uint256 public priceBtcUp = 10 ** 6;
+    uint256 public priceBtcDown = 10 ** 6;        // 6 decimals
 
-    uint256 collateralBtcUp = 0;
-    uint256 collateralBtcDown = 0;
+    uint256 public collateralBtcUp = 0;          //6 decimals
+    uint256 public collateralBtcDown = 0;
 
-    uint256 amountBtcUp = 0;
-    uint256 amountBtcDown = 0;
+    uint256 public amountBtcUp = 0;           // 6 decimals
+    uint256 public amountBtcDown = 0;         // 6 decimals
 
-    uint256 lastBtcPrice = 0;
+    uint256 public lastBtcPrice = 0;       // 8 decimals, chainlink conventions
 
     address addressUsdc = 0xb7a4F3E9097C08dA09517b5aB877F7a917224ede;  // <- Kovan  //0xeb8f08a975Ab53E34D8a0330E0D34de942C95926;
     address addressBtcUSDFeed =  0x6135b13325bfC4B00278B4abC5e20bbce2D6580e; // <- Kovan          // 0xECe365B379E1dD183B20fc5f022230C044d51404;
@@ -66,6 +72,7 @@ contract LeverageTrading{
 
     function initiatePool(uint256 amountLeveragedTokens) public {
         require(!poolIsInitiated, "The pool was already initiated.");
+
         issueBtcUp(amountLeveragedTokens);
         issueBtcDown(amountLeveragedTokens);
 
@@ -79,7 +86,10 @@ contract LeverageTrading{
         btcUp.mint(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeveragedTokens * getBtcUpPrice() / 10 ** 18;
+        priceBtcUp = getBtcUpPrice();
+
+        uint256 amountUsdc = amountLeveragedTokens * priceBtcUp / 10 ** 6;
+
         require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC");
 
         amountBtcUp += amountLeveragedTokens;
@@ -93,7 +103,9 @@ contract LeverageTrading{
         btcDown.mint(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeveragedTokens * getBtcDownPrice() / 10 ** 18;
+        priceBtcDown = getBtcDownPrice();
+        uint256 amountUsdc = amountLeveragedTokens * priceBtcDown / 10 ** 6;
+
         require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC");
 
         amountBtcDown += amountLeveragedTokens;
@@ -107,7 +119,9 @@ contract LeverageTrading{
         btcUp.burn(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeveragedTokens * getBtcUpPrice() / 10 ** 18;
+        priceBtcUp = getBtcUpPrice();
+
+        uint256 amountUsdc = amountLeveragedTokens * priceBtcUp / 10 ** 6;
         require(usdc.transfer(msg.sender, amountUsdc), "Not enough usdc available");
 
         amountBtcUp -= amountLeveragedTokens;
@@ -121,18 +135,21 @@ contract LeverageTrading{
         btcDown.burn(amountLeveragedTokens);
 
         IERC20 usdc = IERC20(addressUsdc);
-        uint256 amountUsdc = amountLeveragedTokens * getBtcDownPrice() / 10 ** 18;
+        priceBtcDown = getBtcDownPrice();
+    
+        uint256 amountUsdc = amountLeveragedTokens * priceBtcDown / 10 ** 6;
         require(usdc.transfer(msg.sender,  amountUsdc), "Not enough usdc available");
 
         amountBtcDown -= amountLeveragedTokens;
         collateralBtcDown -= amountUsdc;
+
     }
 
 
 
     function rebalanceLeveragedTokens() public {
         uint256 btcPrice = getBtcPrice();
-        if (poolIsInitiated) {
+        if ((collateralBtcUp > 0) && (collateralBtcDown > 0)) {
             uint256 rebalanceAmount = getRebalanceAmount(btcPrice);
             if (getSign(btcPrice) > 0) {
                 collateralBtcUp += rebalanceAmount;
@@ -163,23 +180,24 @@ contract LeverageTrading{
  
     function getRebalanceAmount(uint256 priceBtc) internal view returns (uint256){
         uint256 priceDiff = getPriceDiff(priceBtc);
-        return min(collateralBtcUp, collateralBtcDown) * L(priceDiff) / 10 ** 18;
+
+        return min(collateralBtcUp, collateralBtcDown) * L(priceDiff) / 10 ** 6;
     }
 
 
-// getBtcUpPrice() 18 decimals
+// getBtcUpPrice() 6 decimals
     function getBtcUpPrice() public view returns (uint256) {
-        return collateralBtcUp / amountBtcUp * 10 ** 18;
+        return amountBtcUp == 0 ?  priceBtcUp : collateralBtcUp * 10 ** 6 / amountBtcUp ;
     }
 
 
-// getBtcDownPrice() 18 decimals
-    function getBtcDownPrice() public view returns (uint256) {//18 decimals
-        return collateralBtcDown / amountBtcDown * 10 ** 18;
+// getBtcDownPrice() 6 decimals
+    function getBtcDownPrice() public view returns (uint256) {//6 decimals
+        return amountBtcDown == 0 ?  priceBtcDown : collateralBtcDown * 10 ** 6 / amountBtcDown ;
     }
 
 
-// get the price of our asset with 18 decimals
+// get the price of our asset with 8 decimals
     function getBtcPrice() internal view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(addressBtcUSDFeed);
         (,int256 answer,,,) = priceFeed.latestRoundData();
@@ -194,25 +212,34 @@ contract LeverageTrading{
     }
 
 
+    function L(uint256 x) internal pure returns (uint256) {            //6  decimals
 
-    function L(uint256 x) internal pure returns (uint256) {            //18 decimals
+        uint256 denom = 9 * (x ** 2 / 10 ** 6)  + 3 * x + 10 ** 6;
+        uint256 num = 10 ** 12;
 
-        uint256 denom = 9 * (x ** 2 / 10 ** 18)  + 3 * x + 10 ** 18;
-        uint256 num = 10 ** 36;
-
-        return num / denom;
+        return 10 ** 6 - num / denom;
     } 
 
 
-    function getPriceDiff(uint256 btcPrice) internal view returns (uint256) {
-        if (btcPrice> lastBtcPrice) {
-            return 10 ** 18 * btcPrice / lastBtcPrice - 10 ** 18;
+    function getPriceDiff(uint256 btcPrice) internal view returns (uint256) {     //6 decimals
+        if (btcPrice > lastBtcPrice) {
+            return 10 ** 6 * btcPrice / lastBtcPrice - 10 ** 6;
         }
 
         else {
-            return 10 ** 18 * lastBtcPrice / btcPrice - 10 ** 18;
+            return 10 ** 6 * lastBtcPrice / btcPrice - 10 ** 6;
         }
 
+    }
+
+
+    function getBtcupBalance() public view returns(uint256) {
+        return btcUp.balanceOf(msg.sender);
+    }
+
+
+    function getBtcdownBalance() public view returns(uint256) {
+        return btcDown.balanceOf(msg.sender);
     }
 
 
