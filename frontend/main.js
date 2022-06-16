@@ -1,12 +1,24 @@
 const BigNumber = require('bignumber.js');
-const info = require("../build/deployments/.json"); //change name
-const abi = info["abi"];
-const deployment = info["deployment"];
-const contractAddress = deployment["address"];
+
+const leverageTradingInfo = require("../build/deployments/0xf7981d5004f43E461363f311047E4174178eD042.json"); //change name
+const leverageTradingAbi = leverageTradingInfo["abi"];
+const leverageTradingContractAddress = leverageTradingInfo["deployment"]["address"];
+
+
+btcupContractAddress = "0x3CcF16f6658a878e6cdbb6f74A80F76Fd361577C";
+btcupAbi = require("../build/contracts/BTCUP.json")["abi"];
+
+btcdownContractAddress = "0x201dB485F1ba5d11009ceBBea2676020AC03D3aD";
+btcdownAbi = require("../build/contracts/BTCDOWN.json")["abi"];
+
+usdcContractAddress = "0xb7a4F3E9097C08dA09517b5aB877F7a917224ede";
+usdcAbi = require("../build/contracts/IERC20.json")["abi"];
+
 
 const serverUrl = "https://rjfi3tltmxvh.usemoralis.com:2053/server";
 const appId = "97wagl7iRrfE4SiHD8Y0aR77PrX5Btie0sisKP26";
 Moralis.start({ serverUrl, appId});
+
 
 async function connect() { 
     if (!Moralis.User.current()) {
@@ -22,13 +34,15 @@ async function disconnect() {
 
 async function initiatePool() {
     const moneyForInvestment = parseFloat(document.getElementById("amount-initial-liquidity").value);
-    const amountLeveragedTokensStr = getBigNumber18decimals(moneyForInvestment/2).toString();
+    const amountLeveragedTokensStr = getBigNumberWithDecimals(moneyForInvestment/2, 6).toString();
+    
+    await approve(amountLeveragedTokensStr,  usdcContractAddress, usdcAbi);
 
     const writeOptionsInitiatePool = {
         contractAddress: contractAddress,
         functionName: "initiatePool",
-        abi: abi,
-        params: {amountLeveragedTokensStr}
+        abi: leverageTradingAbi,
+        params: {amountLeveragedTokens : amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsInitiatePool);
@@ -37,14 +51,18 @@ async function initiatePool() {
 
 async function issueBtcUp() {
     const moneyForInvestment  = parseFloat(document.getElementById("amount-btcup-issue").value);
+    const moneyForInvestmentMaxAllowed =  getBigNumberWithDecimals(moneyForInvestment * 1.1, 6);
+
+    await approve(moneyForInvestmentMaxAllowed,  usdcContractAddress, usdcAbi);
+
     const priceBtcUp = getBtcUpPrice();
-    const amountLeveragedTokensStr = getBigNumber18decimals(moneyForInvestment / price).toString();
+    const amountLeveragedTokensStr = getBigNumberWithDecimals((moneyForInvestment / price), 6);
 
     const writeOptionsIssueBtcUp = {
         contractAddress: contractAddress,
         functionName: "issueBtcUp",
         abi: abi,
-        params: {amountLeveragedTokensStr}
+        params: {amountLeveragedTokens : amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsIssueBtcUp);
@@ -53,61 +71,61 @@ async function issueBtcUp() {
 
 async function issueBtcDown() {
     const moneyForInvestment = parseFloat(document.getElementById("amount-btcdown-issue").value);
+    const moneyForInvestmentMaxAllowed =  getBigNumberWithDecimals(moneyForInvestment * 1.1, 6);
     const priceBtcDown = getBtcDownPrice();
-    const amountLeveragedTokensStr = getBigNumber18decimals(moneyForInvestment / price).toString();
+
+    await approve(moneyForInvestmentMaxAllowed,  usdcContractAddress, usdcAbi);
+
+    const amountLeveragedTokensStr = getBigNumberWithDecimals(moneyForInvestment / priceBtcDown, 6).toString();
 
     const writeOptionsIssueBtcDown = {
         contractAddress: contractAddress,
         functionName: "issueBtcDown",
         abi: abi,
-        params: {amountLeveragedTokensStr}
+        params: {amountLeveragedTokens : amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsIssueBtcDown);
-
 }
+
 
 async function redeemBtcUp() {
     let amountLeveragedTokens = parseFloat(document.getElementById("amount-btcdown-redeem").value);
-    amountLeveragedTokensStr = getBigNumber18decimals(amountLeveragedTokens).toString();
+    amountLeveragedTokensStr = getBigNumberDecimals(amountLeveragedTokens, 6).toString();
+
+    await approve(amountLeveragedTokensStr,  btcupContractAddress, btcupAbi);
+
 
     const writeOptionsRedeemBtcUp = {
-        contractAddress: contractAddress,
+        contractAddress: leverageTradingContractAddress,
         functionName: "redeemBtcUp",
         abi: abi,
-        params: {amountLeveragedTokens}
+        params: {amountLeveragedTokens: amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsRedeemBtcUp);
-
 }
 
 async function redeemBtcDown() {
     const amountLeveragedTokens = parseFloat(document.getElementById("amount-btcdown-redeem").value);
-    amountLeveragedTokensStr = getBigNumber18decimals(moneyForInvestment).toString()
+    amountLeveragedTokensStr = getBigNumberDecimals(amountLeveragedTokens, 6).toString();
+    await approve(amountLeveragedTokensStr,  btcdownContractAddress, btcdownAbi);
 
     const writeOptionsRedeemBtcUp = {
-        contractAddress: contractAddress,
+        contractAddress: leverageTradingContractAddress,
         functionName: "redeemBtcDown",
         abi: abi,
-        params: {amountLeveragedTokensStr}
+        params: {amountLeveragedTokens : amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsRedeemBtcUp);
 }
 
 
-function getBigNumber18decimals(x) {
-    let x18decimals = new BigNumber(x);
-    let y18decimals = new BigNumber('1000000000000000000');
-    
-    return x18decimals.multipliedBy(y18decimals);
-}    
-
 
 async function getBtcUpPrice() {
     const readOptionsBtcUpPrice = {
-        contractAddress: contractAddress,
+        contractAddress: leverageTradingContractAddress,
         functionName: "getBtcUpPrice",
         abi: abi
     };
@@ -119,7 +137,7 @@ async function getBtcUpPrice() {
 
 async function getBtcDownPrice() {
     const readOptionsBtcDownPrice = {
-        contractAddress: contractAddress,
+        contractAddress: leverageTradingContractAddress,
         functionName: "getBtcDownPrice",
         abi: abi
     };
@@ -127,6 +145,28 @@ async function getBtcDownPrice() {
     const BtcDownPrice = await Moralis.executeFunction(readOptionsBtcDownPrice);
     return BtcDownPrice.toNumber();
 }
+
+
+async function approve(amountBigNumberWithDecimals,  contractAddressERC20Token, erc20TokenAbi) {
+
+
+    const writeOptionsApproval = {
+        contractAddress: contractAddressERC20Token,
+        functionName: "approve",
+        abi: erc20TokenAbi,
+        params: {spender: contractAddress, amount: amountBigNumberWithDecimals}
+    };
+
+    await Moralis.executeFunction(writeOptionsApproval);
+}
+
+
+function getBigNumberWithDecimals(x, numberDecimals) {
+    let xAsBigNumber = new BigNumber(x);
+    let yAsBigNumberWithDecimals = new BigNumber(string.concat("1", "0".repeat(numberDecimals) ));
+    
+    return xAsBigNumber.multipliedBy(yAsBigNumberWithDecimals);
+}    
 
 
 document.getElementById("connect-btn").onclick = connect;
