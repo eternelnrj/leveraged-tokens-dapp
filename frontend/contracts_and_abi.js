@@ -1,14 +1,14 @@
 
 const leverageTradingInfo = {
-    "contractAddress" : "0xab7724612fa346F7407D2B94b865DD3c4AA86771",
-    "abi" : require("../build/deployments/42/0xab7724612fa346F7407D2B94b865DD3c4AA86771.json")["abi"]
+    "contractAddress" : "0xC27413247A150ae7D77f00C79e215AB1D3DE1956",
+    "abi" : require("../build/deployments/42/0xC27413247A150ae7D77f00C79e215AB1D3DE1956.json")["abi"]
 }
 
-const btcupInfo = { contractAddress : "0x928bb8531CA990c70044b24502667055f17bd767",
+const btcupInfo = { contractAddress : "0x257B106fcd747988F038E329797B6bE9b3182e34",
                     abi : require("../build/contracts/BTCUP.json")["abi"]};
 
 
-const btcdownInfo = {contractAddress : "0x2Aa27F9e02FDfCf8C4D5A1aC3967D4D25f62F560",
+const btcdownInfo = {contractAddress : "0x539704979542ca370D920f6BA9a004578953DF29",
                     abi : require("../build/contracts/BTCDOWN.json")["abi"]}   
 
 

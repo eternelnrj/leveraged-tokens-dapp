@@ -1,0 +1,23 @@
+{
+  "contracts": {
+    "BTCDOWN": "08f51ad49160d4abaa5b3c324d03f5f2670dcaa6",
+    "BTCUP": "575954518449bfa9df864f5b53761eff50c6a0c5",
+    "LeveragedTrading": "6cd804a82a30721a4a7486fdb40a36fe9da6e106",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/ERC20": "46265bce5d8560fb57eeebb5352b753a38dd6665",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/SafeMath": "1ce946f6a4eaa185320328620ccf999b9e86db7c"
+  },
+  "tests": {
+    "tests/test_everything.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "F.",
+      "sha1": "db265e157ae75b13d918e239cfa8aac021480b48",
+      "txhash": [
+        "11fd61274145e74e14f68879b365c3511f05cc5c"
+      ]
+    }
+  },
+  "tx": {
+    "11fd61274145e74e14f68879b365c3511f05cc5c": {}
+  }
+}

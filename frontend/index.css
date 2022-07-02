@@ -33,21 +33,6 @@ buttons related to btcup:
 }
 
 
-.amount-btcup-issue{
-    top:50%;
-    background-color:#e5eee6;
-    color: rgb(0, 0, 0);
-    border-radius:10px;
-    box-shadow: 0px 0px 2px 2px rgb(0,0,0);
-    padding:15px;
-    min-height:18px; 
-    min-width: 60px;
-    position: absolute;
-    top: 100px;
-    left: 140px;
-    
-}
-
 
 .redeem-btcup-btn{
     top:50%;
@@ -61,6 +46,22 @@ buttons related to btcup:
     position: absolute;
     top: 100px;
     left: 355px;
+    
+}
+
+
+.amount-btcup-issue{
+    top:50%;
+    background-color:#e5eee6;
+    color: rgb(0, 0, 0);
+    border-radius:10px;
+    box-shadow: 0px 0px 2px 2px rgb(0,0,0);
+    padding:15px;
+    min-height:18px; 
+    min-width: 60px;
+    position: absolute;
+    top: 100px;
+    left: 140px;
     
 }
 
@@ -100,21 +101,6 @@ buttons related to btcdown:
     
 }
 
-
-.amount-btcdown-issue{
-    top:50%;
-    background-color:#e5eee6;
-    color: rgb(0, 0, 0);
-    border-radius:10px;
-    box-shadow: 0px 0px 2px 2px rgb(0,0,0);
-    padding: 15px 8px;
-    position: absolute;
-    top: 180px;
-    left: 160px;
-    
-}
-
-
 .redeem-btcdown-btn{
     top:50%;
     background-color:#c32d19;
@@ -131,6 +117,20 @@ buttons related to btcdown:
 }
 
 
+
+.amount-btcdown-issue{
+    top:50%;
+    background-color:#e5eee6;
+    color: rgb(0, 0, 0);
+    border-radius:10px;
+    box-shadow: 0px 0px 2px 2px rgb(0,0,0);
+    padding: 15px 8px;
+    position: absolute;
+    top: 180px;
+    left: 160px;
+    
+}
+
 .amount-btcdown-redeem{
     top:50%;
     background-color:#e5eee6;
@@ -144,7 +144,4 @@ buttons related to btcdown:
     left: 530px;
     
 }
-
-
-
 
