@@ -1,4 +1,4 @@
-import {leverageTradingInfo, btcupInfo,  btcdownInfo, usdcInfo} from "./contracts_and_abi.js"
+import {leveragedTradingInfo, btcupInfo,  btcdownInfo, usdcInfo} from "./contracts_and_abi.js"
 import {getBigNumberWithDecimals, approve} from "./secondary_functions.js"
 
 const BigNumber = require('bignumber.js');
@@ -18,17 +18,15 @@ async function connect() {
 
 async function issueBtcUp() {
     const moneyForInvestment  = parseFloat(document.getElementById("amount-btcup-issue").value);
-
     const moneyForInvestmentStr  = getBigNumberWithDecimals(moneyForInvestment, 6).toString();
-    const moneyForInvestmentMaxAllowedStr = getBigNumberWithDecimals(moneyForInvestment * 1.01, 6).toString();
-                                                           
-    const tx = await approve(moneyForInvestmentMaxAllowedStr, leverageTradingInfo["contractAddress"], usdcInfo["contractAddress"], usdcInfo["abi"]);
-    await tx.wait(1);
+    console.log(moneyForInvestmentStr);                                                     
+    const tx = await approve(moneyForInvestmentStr, leveragedTradingInfo["contractAddress"], usdcInfo["contractAddress"], usdcInfo["abi"]);
+    await tx.wait();
 
     const writeOptionsIssueBtcUp = {
-        contractAddress: leverageTradingInfo["contractAddress"],
+        contractAddress: leveragedTradingInfo["contractAddress"],
         functionName: "issueBtcUp",
-        abi: leverageTradingInfo["abi"],
+        abi: leveragedTradingInfo["abi"],
         params: {amountUsdc:moneyForInvestmentStr}
     };
 
@@ -37,18 +35,16 @@ async function issueBtcUp() {
 
 async function issueBtcDown() {
     const moneyForInvestment = parseFloat(document.getElementById("amount-btcdown-issue").value);
-
     const moneyForInvestmentStr  = getBigNumberWithDecimals(moneyForInvestment, 6).toString();
-    const moneyForInvestmentMaxAllowedStr =  getBigNumberWithDecimals(moneyForInvestment * 1.01, 6).toString();
 
-    const tx = await approve(moneyForInvestmentMaxAllowedStr, leverageTradingInfo["contractAddress"],
+    const tx = await approve(moneyForInvestmentStr, leveragedTradingInfo["contractAddress"],
                              usdcInfo["contractAddress"], usdcInfo["abi"]);
-    await tx.wait(1);
+    await tx.wait();
 
     const writeOptionsIssueBtcDown = {
-        contractAddress: leverageTradingInfo["contractAddress"],
+        contractAddress: leveragedTradingInfo["contractAddress"],
         functionName: "issueBtcDown",
-        abi: leverageTradingInfo["abi"],
+        abi: leveragedTradingInfo["abi"],
         params: {amountUsdc:moneyForInvestmentStr}
     };
 
@@ -56,18 +52,18 @@ async function issueBtcDown() {
 }
 
 async function redeemBtcUp() {
-    let amountLeveragedTokens = parseFloat(document.getElementById("amount-btcdown-redeem").value);
+    const amountLeveragedTokens = parseFloat(document.getElementById("amount-btcup-redeem").value);
     const amountLeveragedTokensStr = getBigNumberWithDecimals(amountLeveragedTokens, 6).toString();
-
-    const tx = await approve(amountLeveragedTokensStr,  leverageTradingInfo["contractAddress"],
+    
+    const tx = await approve(amountLeveragedTokensStr,  leveragedTradingInfo["contractAddress"],
                               btcupInfo["contractAddress"],  btcupInfo["abi"]);
-    await tx.wait(1);
+    await tx.wait();
 
     const writeOptionsRedeemBtcUp = {
-        contractAddress: leverageTradingInfo["contractAddress"],
+        contractAddress: leveragedTradingInfo["contractAddress"],
         functionName: "redeemBtcUp",
-        abi: leverageTradingInfo["abi"],
-        params: {amountLeveragedTokens: amountLeveragedTokensStr}
+        abi: leveragedTradingInfo["abi"],
+        params: {amountLeveragedTokens:amountLeveragedTokensStr}
     };
 
     await Moralis.executeFunction(writeOptionsRedeemBtcUp);
@@ -77,14 +73,14 @@ async function redeemBtcDown() {
     const amountLeveragedTokens = parseFloat(document.getElementById("amount-btcdown-redeem").value);
     const amountLeveragedTokensStr = getBigNumberWithDecimals(amountLeveragedTokens, 6).toString();
     
-    const tx = await approve(amountLeveragedTokensStr, leverageTradingInfo["contractAddress"],
+    const tx = await approve(amountLeveragedTokensStr, leveragedTradingInfo["contractAddress"],
                             btcdownInfo["contractAddress"], btcdownInfo["abi"]);
-    await tx.wait(1);
+    await tx.wait();
 
     const writeOptionsRedeemBtcUp = {
-        contractAddress: leverageTradingInfo["contractAddress"],
+        contractAddress: leveragedTradingInfo["contractAddress"],
         functionName: "redeemBtcDown",
-        abi: leverageTradingInfo["abi"],
+        abi: leveragedTradingInfo["abi"],
         params: {amountLeveragedTokens:amountLeveragedTokensStr}
     };
     await Moralis.executeFunction(writeOptionsRedeemBtcUp);
@@ -97,4 +93,4 @@ async function redeemBtcDown() {
   document.getElementById("redeem-btcup-btn").onclick = redeemBtcUp;
   document.getElementById("redeem-btcdown-btn").onclick = redeemBtcDown;
                            
-  export {leverageTradingInfo};
+  export {leveragedTradingInfo};
