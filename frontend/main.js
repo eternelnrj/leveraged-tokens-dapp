@@ -12,14 +12,14 @@ if (Moralis.User.current()){Moralis.User.logOut();};
 
 async function connect() { 
     if (!Moralis.User.current()) {
-      await Moralis.authenticate({ signingMessage: "Log in using Moralis"});
+      await Moralis.authenticate({ signingMessage: "Log in using Moralis" });
     }
   }
 
 async function issueBtcUp() {
     const moneyForInvestment  = parseFloat(document.getElementById("amount-btcup-issue").value);
     const moneyForInvestmentStr  = getBigNumberWithDecimals(moneyForInvestment, 6).toString();
-    console.log(moneyForInvestmentStr);                                                     
+
     const tx = await approve(moneyForInvestmentStr, leveragedTradingInfo["contractAddress"], usdcInfo["contractAddress"], usdcInfo["abi"]);
     await tx.wait();
 

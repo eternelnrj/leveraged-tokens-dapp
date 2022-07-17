@@ -1,7 +1,6 @@
 const BigNumber = require('bignumber.js');
 
 function getBigNumberWithDecimals(x, numberDecimals) {
-    console.log(typeof(x));
     const xAsBigNumber = new BigNumber(x.toFixed(numberDecimals));
     const ScalingFactorAsBigNumber = new BigNumber("1".concat("0".repeat(numberDecimals) ));
     

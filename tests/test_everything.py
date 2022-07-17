@@ -18,9 +18,9 @@ def leveraged_trading():
 def test_initiate_pool(leveraged_trading):
     usdc = interface.IERC20(usdc_address)
     usdc.approve(leveraged_trading.address, 10000000, {"from" : "0x582B20222BFE421ead01e4940D1e1223359773c3"})
-    leveraged_trading.initiatePool(1000000, {"from" : "0x582B20222BFE421ead01e4940D1e1223359773c3"})
+    leveraged_trading.initializePool(1000000, {"from" : "0x582B20222BFE421ead01e4940D1e1223359773c3"})
 
-    assert leveraged_trading.poolIsInitiated() == True
+    assert leveraged_trading.poolIsInitialized() == True
     assert leveraged_trading.amountBtcUp() == 500000
     assert leveraged_trading.amountBtcDown() == 500000
 

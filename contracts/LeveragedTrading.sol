@@ -40,6 +40,7 @@ contract BTCUP is  ERC20, ERC20Burnable {
     }
 }
 
+
 contract BTCDOWN is ERC20, ERC20Burnable {
     address parentAddress;
 
@@ -65,6 +66,7 @@ contract BTCDOWN is ERC20, ERC20Burnable {
     }
 }
 
+
 contract LeveragedTrading is Ownable {
     using SafeMath for uint256;
 
@@ -77,9 +79,9 @@ contract LeveragedTrading is Ownable {
     uint256 public amountBtcUp = 0;           // 6 decimals
     uint256 public amountBtcDown = 0;         // 6 decimals
 
-    uint256 public lastBtcPrice = 0;       // 8 decimals, chainlink conventions
+    uint256 public lastBtcPrice;       // 8 decimals, chainlink conventions
 
-    bool public poolIsInitiated = false;
+    bool public poolIsInitialized = false;
 
     address addressUsdc = 0xb7a4F3E9097C08dA09517b5aB877F7a917224ede;  // <- Kovan  //0xeb8f08a975Ab53E34D8a0330E0D34de942C95926;
     address addressBtcUSDFeed =  0x6135b13325bfC4B00278B4abC5e20bbce2D6580e; // <- Kovan          // 0xECe365B379E1dD183B20fc5f022230C044d51404;
@@ -87,8 +89,8 @@ contract LeveragedTrading is Ownable {
     BTCUP btcUp;
     BTCDOWN btcDown;
 
-    function initiatePool(uint256 amountUsdc) public onlyOwner {
-        require(!poolIsInitiated, "The pool was already initiated.");
+    function initializePool(uint256 amountUsdc) public onlyOwner {
+        require(!poolIsInitialized, "The pool was already initiated.");
 
         btcUp = new BTCUP(address(this));
         btcDown = new BTCDOWN(address(this));
@@ -96,7 +98,7 @@ contract LeveragedTrading is Ownable {
         issueBtcUp(amountUsdc.div(2));
         issueBtcDown(amountUsdc.div(2));
 
-        poolIsInitiated = true;
+        poolIsInitialized = true;
     }
 
     function issueBtcUp(uint256 amountUsdc) public {
@@ -170,7 +172,6 @@ contract LeveragedTrading is Ownable {
             }
 
         }
-
         lastBtcPrice = btcPrice;
     }
 
@@ -241,5 +242,11 @@ contract LeveragedTrading is Ownable {
         return btcDown.balanceOf(msg.sender);
     }
 
+
 }
+
+
+
+
+
 
