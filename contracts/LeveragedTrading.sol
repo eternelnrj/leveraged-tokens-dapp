@@ -79,7 +79,7 @@ contract LeveragedTrading is Ownable {
     uint256 public amountBtcUp = 0;           // 6 decimals
     uint256 public amountBtcDown = 0;         // 6 decimals
 
-    uint256 public lastBtcPrice;       // 8 decimals, chainlink conventions
+    uint256 public lastBtcPrice = 0;       // 8 decimals, chainlink conventions
 
     bool public poolIsInitialized = false;
 
@@ -90,7 +90,8 @@ contract LeveragedTrading is Ownable {
     BTCDOWN btcDown;
 
     function initializePool(uint256 amountUsdc) public onlyOwner {
-        require(!poolIsInitialized, "The pool was already initiated.");
+        require(!poolIsInitialized, "The pool was already initialized.");
+        poolIsInitialized = true;
 
         btcUp = new BTCUP(address(this));
         btcDown = new BTCDOWN(address(this));
@@ -98,10 +99,10 @@ contract LeveragedTrading is Ownable {
         issueBtcUp(amountUsdc.div(2));
         issueBtcDown(amountUsdc.div(2));
 
-        poolIsInitialized = true;
     }
 
     function issueBtcUp(uint256 amountUsdc) public {
+        require(poolIsInitialized, "The pool was not initialized.");
         rebalanceLeveragedTokens();
         
         priceBtcUp = getBtcUpPrice();
@@ -112,10 +113,11 @@ contract LeveragedTrading is Ownable {
         collateralBtcUp = collateralBtcUp.add(amountUsdc);
 
         IERC20 usdc = IERC20(addressUsdc);
-        require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC.");
+        require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "USDC transfer failed.");
     }
 
     function issueBtcDown(uint256 amountUsdc) public {
+        require(poolIsInitialized, "The pool was not initialized.");
         rebalanceLeveragedTokens();
         
         priceBtcDown = getBtcDownPrice();
@@ -126,10 +128,11 @@ contract LeveragedTrading is Ownable {
         collateralBtcDown = collateralBtcDown.add(amountUsdc);
 
         IERC20 usdc = IERC20(addressUsdc);
-        require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "You don't have enough USDC.");
+        require(usdc.transferFrom(msg.sender, address(this), amountUsdc), "USDC transfer failed.");
     }
 
     function redeemBtcUp(uint256 amountLeveragedTokens) public {
+        require(poolIsInitialized, "The pool was not initialized.");
         rebalanceLeveragedTokens();
         btcUp.burn(amountLeveragedTokens);
 
@@ -144,6 +147,7 @@ contract LeveragedTrading is Ownable {
     }
 
     function redeemBtcDown(uint256 amountLeveragedTokens) public {
+        require(poolIsInitialized, "The pool was not initialized.");
         rebalanceLeveragedTokens();
         btcDown.burn(amountLeveragedTokens);
 
@@ -244,9 +248,3 @@ contract LeveragedTrading is Ownable {
 
 
 }
-
-
-
-
-
-

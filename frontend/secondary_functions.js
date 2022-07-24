@@ -15,7 +15,7 @@ async function approve(amountBigNumberWithDecimalsStr, spenderAddress, contractA
         params: {spender: spenderAddress, amount: amountBigNumberWithDecimalsStr}
     };
 
-    return await Moralis.executeFunction(writeOptionsApproval);
+    return Moralis.executeFunction(writeOptionsApproval);
 }
 
 
